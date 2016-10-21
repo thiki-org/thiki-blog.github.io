@@ -1,0 +1,175 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>思奇如何测试RESTful Web APIs | 思奇看板团队 | 以乐趣创造乐趣</title>
+
+  
+  <meta name="author" content="思奇团队">
+  
+
+  
+  <meta name="description" content="从本文开始，我们将一步步讨论思奇看板中的技术实践。本文讨论的是自动化测试方面的应用，技术上采用spring-test、rest-assured和HSQL.">
+  
+
+  
+  
+  <meta name="keywords" content="思奇,rest-assured,spring-boot">
+  
+
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+  <meta property="og:title" content="思奇如何测试RESTful Web APIs"/>
+
+  <meta property="og:site_name" content="思奇看板团队"/>
+
+  
+  <meta property="og:image" content="/favicon.ico"/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="思奇看板团队" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+</head>
+
+
+<body>
+<div class="blog">
+  <div class="content">
+
+    <header>
+  <div class="site-branding">
+    <h1 class="site-title">
+      <a href="/">思奇看板团队</a>
+    </h1>
+    <p class="site-description">以乐趣创造乐趣</p>
+  </div>
+  <nav class="site-navigation">
+    <ul>
+      
+        <li><a href="/">主页</a></li>
+      
+        <li><a href="/archives">归档</a></li>
+      
+        <li><a href="https://github.com/thiki-org">源码</a></li>
+      
+        <li><a href="https://github.com/thiki-org">产品</a></li>
+      
+    </ul>
+  </nav>
+</header>
+
+    <main class="site-main posts-loop">
+    <article>
+
+  
+    
+    <h3 class="article-title"><span>思奇如何测试RESTful Web APIs</span></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2016/10/21/how-thiki-test-restful-web-apis/" rel="bookmark">
+        <time class="entry-date published" datetime="2016-10-21T00:23:35.000Z">
+          2016-10-21
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <p>从本文开始，我们将一步步讨论思奇看板中的技术实践。本文讨论的是自动化测试方面的应用，技术上采用spring-test、rest-assured和HSQL.<a id="more"></a></p>
+<p><strong><em>需求描述</em></strong><br>我们有一个创建entry的Web API,接口信息如下：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">url:/entries</div><div class="line"></div><div class="line">request:</div><div class="line">&#123;</div><div class="line">    "title": "this is the entry title."</div><div class="line">&#125;</div><div class="line"></div><div class="line">response:</div><div class="line">&#123;</div><div class="line">    "title": "this is the entry title.",</div><div class="line">    "reporter": 11222,</div><div class="line">    "_links": &#123;</div><div class="line">        "all": &#123;</div><div class="line">            "href": "http://localhost:8007/entries"</div><div class="line">        &#125;,</div><div class="line">        "self": &#123;</div><div class="line">            "href": "http://localhost:8007/entries/fooId"</div><div class="line">        &#125;,</div><div class="line">        "del": &#123;</div><div class="line">            "href": "http://localhost:8007/entries/fooId"</div><div class="line">        &#125;,</div><div class="line">        "tasks": &#123;</div><div class="line">            "href": "http://localhost:8007/entries/fooId/tasks"</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>现在我们要对这个接口实现自动化测试，需要考虑的有如何启动服务、如何发送请求以及如何准备、维护数据，针对这几点，我们分别从以下五个方面来实现测试：</p>
+<h3 id="一、配置内存数据库"><a href="#一、配置内存数据库" class="headerlink" title="一、配置内存数据库"></a>一、配置内存数据库</h3><p>我们知道，一个有效的单元测试必须能够在没有网络连接的情况下随时随地运行，这就要求我们不能连接指定的、架设于程序之外的数据库服务器，所以内存数据库就成了必然的选择。</p>
+<p>内存数据库非常小巧，可以在单元测试运行时启动，并在测试运行结束后关闭，中途还可以根据业务需要来操作数据库。在思奇看板中，我们选择的是HSQL，spring-boot对它的支持很友好，关于它的配置也十分简单。</p>
+<p>如果你已经下载了思奇看板的源码，那你肯定会发现在ORM方面我们使用的是Mybatis.所以，在测试中，我们也必须使用mybatis，我们不能无视它的存在而通过另外的途径去操作数据库，要知道在集成测试中，对mybatis中mapper文件的测试也是测试的一部分。幸运的是，HSQL对Mybatis已经有了足够好的支持，来看下业务代码中我们是如何配置mapper文件的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Bean</span></div><div class="line"><span class="function"><span class="keyword">public</span> SqlSessionFactory <span class="title">sqlSessionFactory</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</div><div class="line">      SqlSessionFactoryBean sqlSessionFactoryBean = <span class="keyword">new</span> SqlSessionFactoryBean();</div><div class="line">      sqlSessionFactoryBean.setDataSource(dataSource());</div><div class="line"></div><div class="line">      PathMatchingResourcePatternResolver resolver = <span class="keyword">new</span> PathMatchingResourcePatternResolver();</div><div class="line">      org.apache.ibatis.session.Configuration configuration = <span class="keyword">new</span> org.apache.ibatis.session.Configuration();</div><div class="line">      Interceptor[] interceptors = &#123;dbInterceptor&#125;;</div><div class="line">      sqlSessionFactoryBean.setPlugins(interceptors);</div><div class="line">      sqlSessionFactoryBean.setMapperLocations(resolver.getResources(<span class="string">"classpath:org/thiki/kanban/mybatis/**/*.xml"</span>));</div><div class="line">      <span class="keyword">return</span> sqlSessionFactoryBean.getObject();</div><div class="line">  &#125;</div></pre></td></tr></table></figure>
+<p>这段配置还能够看懂吧？没错，我们不需要动它，就这样就够了。那我们要修改的是什么？是<code>DatabaseConfig.java</code>中的<code>dataSource()</code>,它配置的是<code>mysql</code>，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Bean</span></div><div class="line"> <span class="function"><span class="keyword">public</span> DataSource <span class="title">dataSource</span><span class="params">()</span> </span>&#123;</div><div class="line">      DriverManagerDataSource mysql = <span class="keyword">new</span> DriverManagerDataSource();</div><div class="line">      mysql.setDriverClassName(driver);</div><div class="line">      mysql.setUrl(url);</div><div class="line">      mysql.setUsername(userName);</div><div class="line">      mysql.setPassword(password);</div><div class="line">      <span class="keyword">return</span> mysql;</div><div class="line">  &#125;</div></pre></td></tr></table></figure>
+<p>所以，我们要想在测试中使用内存数据库，就必须重写<code>dataSource</code>，就是下面这样：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Configuration</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestContextConfiguration</span> </span>&#123;</div><div class="line">    <span class="meta">@Bean</span></div><div class="line">    <span class="function"><span class="keyword">public</span> DataSource <span class="title">dataSource</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">new</span> EmbeddedDatabaseBuilder()</div><div class="line">                .setType(EmbeddedDatabaseType.HSQL)</div><div class="line">                .addScript(<span class="string">"classpath:hsql_init.sql"</span>)</div><div class="line">                .build();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>关于HSQL的dataSource的配置没有其他好说的了，当然除了这段配置外，别忘了准备hsql_init.sql，我们需要它来初始化数据库。</p>
+<h3 id="二、配置Spring及Runnner"><a href="#二、配置Spring及Runnner" class="headerlink" title="二、配置Spring及Runnner"></a>二、配置Spring及Runnner</h3><p>在上面的第一步，我们已经配置好了内存数据库，而如果我们想让spring项目在运行时使用它，还需要配置SpringApplicationConfiguration.</p>
+<p>给测试类添加注解</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@SpringApplicationConfiguration</span>(&#123;Application.class, TestContextConfiguration.class&#125;)</div></pre></td></tr></table></figure>
+<p>其中<code>Application</code>是业务代码的程序入口，<code>TestContextConfiguration</code>是我们在上一步创建的配置类。</p>
+<p>OK，<code>SpringApplicationConfiguration</code>的配置就是这样，如此简单。当然，要想从测试启动程序，还没有结束，还需要在测试类上再加两个注解：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@WebIntegrationTest</span>(<span class="string">"server.port:8007"</span>)</div><div class="line"><span class="meta">@RunWith</span>(SpringJUnit4ClassRunner.class)</div></pre></td></tr></table></figure>
+<p>第一个注解就是用来指定服务端口号的。</p>
+<h3 id="三、配置Rest-assured"><a href="#三、配置Rest-assured" class="headerlink" title="三、配置Rest-assured"></a>三、配置Rest-assured</h3><p>通过前面两步，我们已经完成了内存数据库和spring的配置，没错，服务方面的配置已经结束，现在服务已经可以启动了。所以接下来，就需要配置Rest-assured了。Rest-assured是一个用来专门用来测试Restful APIs的工具，要想更多了解，可以移步到它的官网。</p>
+<p>在思奇看板中，Rest-assured需要的设置并不多，目前只需要指定它的端口号即可：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">RestAssured.port = port;</div></pre></td></tr></table></figure>
+<p>配置好端口号之后，那么Rest-assured在每次发送请求时就不再需要写完整的路径，比如原先路径是<code>http://localhost:8080/entries</code>，那么配置端口号之后，直接写<code>/entries</code>即可，是不是简捷了很多？</p>
+<h3 id="四、配置JdbcTemplate"><a href="#四、配置JdbcTemplate" class="headerlink" title="四、配置JdbcTemplate"></a>四、配置JdbcTemplate</h3><p>在前面已经说了，我们可以在测试的过程中可以直接操作数据库，而能完成这件事情的就是JdbcTemplate.<br>那如何才能通过JdbcTemplate随心所欲地操作内存数据库？答案就在下面：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Autowired</span></div><div class="line"><span class="keyword">protected</span> DataSource db;</div><div class="line"></div><div class="line"><span class="meta">@Before</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setUp</span><span class="params">()</span> </span>&#123;</div><div class="line">    jdbcTemplate = <span class="keyword">new</span> JdbcTemplate(db);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>我们在@Before中把jdbcTemplate对象准备好后，在各个测试用例中就可以直接使用了。jdbcTemplate提供了诸如execute、query、queryForList等非常多的方法，使用起来竟也如此方便，举个通过SQL清理数据库的栗子：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">jdbcTemplate.execute(<span class="string">"TRUNCATE TABLE kb_entry"</span>);</div></pre></td></tr></table></figure>
+<h3 id="五、编写测试"><a href="#五、编写测试" class="headerlink" title="五、编写测试"></a>五、编写测试</h3><p>现在，我们走完了四步，万事已经具备，可以着手写测试了！还记得我们在开头的提的需求吗？不清楚地话再回去看看。根据业务需求，我们编写单元测试如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@RunWith</span>(SpringJUnit4ClassRunner.class)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EntriesControllerTest</span> <span class="keyword">extends</span> <span class="title">TestBase</span> </span>&#123;</div><div class="line"></div><div class="line"><span class="meta">@Test</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">shouldReturn201WhenCreateEntrySuccessfully</span><span class="params">()</span> </span>&#123;</div><div class="line">        given().header(<span class="string">"userId"</span>, <span class="string">"11222"</span>)</div><div class="line">                .body(<span class="string">"&#123;\"title\":\"this is the entry title.\"&#125;"</span>)</div><div class="line">                .contentType(ContentType.JSON)</div><div class="line">                .when()</div><div class="line">                .post(<span class="string">"/entries"</span>)</div><div class="line">                .then()</div><div class="line">                .statusCode(<span class="number">201</span>)</div><div class="line">                .body(<span class="string">"title"</span>, equalTo(<span class="string">"this is the entry title."</span>))</div><div class="line">                .body(<span class="string">"reporter"</span>, equalTo(<span class="number">11222</span>))</div><div class="line">                .body(<span class="string">"_links.all.href"</span>, equalTo(<span class="string">"http://localhost:8007/entries"</span>))</div><div class="line">                .body(<span class="string">"_links.tasks.href"</span>, equalTo(<span class="string">"http://localhost:8007/entries/fooId/tasks"</span>))</div><div class="line">                .body(<span class="string">"_links.self.href"</span>, equalTo(<span class="string">"http://localhost:8007/entries/fooId"</span>))</div><div class="line">                .body(<span class="string">"_links.del.href"</span>, equalTo(<span class="string">"http://localhost:8007/entries/fooId"</span>));</div><div class="line">    &#125;</div><div class="line">｝</div></pre></td></tr></table></figure>
+<p>前面几个步骤地配置，我们把它提取到了基类中：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@SpringApplicationConfiguration</span>(&#123;Application.class, TestContextConfiguration.class&#125;)</div><div class="line"><span class="meta">@WebIntegrationTest</span>(<span class="string">"server.port:8007"</span>)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestBase</span> </span>&#123;</div><div class="line">    <span class="keyword">protected</span> <span class="keyword">static</span> <span class="keyword">int</span> port = <span class="number">8007</span>;</div><div class="line"></div><div class="line">    <span class="meta">@Autowired</span></div><div class="line">    <span class="keyword">protected</span> DataSource db;</div><div class="line">    <span class="keyword">protected</span> JdbcTemplate jdbcTemplate;</div><div class="line"></div><div class="line">    <span class="meta">@Before</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setUp</span><span class="params">()</span> </span>&#123;</div><div class="line">        jdbcTemplate = <span class="keyword">new</span> JdbcTemplate(db);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@BeforeClass</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">globalInit</span><span class="params">()</span> </span>&#123;</div><div class="line">        RestAssured.port = port;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+      
+
+    <span class="post-categories">
+      <i class="icon-categories"></i>
+        <a href="/categories/技术进步/">技术进步</a>
+    </span>
+    
+
+    
+    
+
+    <span class="post-tags">
+      <i class="icon-tags"></i>
+        <a href="/tags/思奇/">思奇</a><a href="/tags/rest-assured/">rest-assured</a><a href="/tags/spring-boot/">spring-boot</a>
+    </span>
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+  
+
+
+
+    </main>
+
+    <footer class="site-footer">
+  <p class="site-info">
+    Proudly powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and
+    Theme by <a href="https://github.com/CodeDaraW/Hacker" target="_blank">Hacker</a>
+    </br>
+    
+    &copy; 2016 思奇团队
+    
+  </p>
+</footer>
+    
+  </div>
+</div>
+</body>
+</html>
