@@ -3,21 +3,28 @@
 <head>
   <meta charset="utf-8">
   
-  <title>思奇看板团队 | 以乐趣创造乐趣</title>
+  <title>思奇中的身份认证与权限管控设计（上） | 思奇看板团队 | 以乐趣创造乐趣</title>
 
   
   <meta name="author" content="思奇团队">
   
 
   
+  <meta name="description" content="身份认证和权限管控是一个成熟架构所必备的两个部分，思奇也不例外。总体来说，思奇在安全上主要分两大块：身份认证和权限管控。如下图：
+思奇采用RESTful的架构风格，因此身份认证和鉴权在某些方面也有别于我们常见的系统。本文主要讲解思奇的身份认证体系，权限管控方面的信息将在下一篇文章中介绍。
+在身份认证">
+  
 
+  
+  
+  <meta name="keywords" content="身份认证,鉴权,spring-boot">
   
 
   <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
 
-  
+  <meta property="og:title" content="思奇中的身份认证与权限管控设计（上）"/>
 
   <meta property="og:site_name" content="思奇看板团队"/>
 
@@ -58,12 +65,11 @@
 </header>
 
     <main class="site-main posts-loop">
-    
-  <article>
+    <article>
 
   
     
-    <h3 class="article-title"><a href="/2016/10/24/the-design-of-identification-and-authentication-in-thiki-kanban-Ⅰ/"><span>思奇中的身份认证与权限管控设计（上）</span></a></h3>
+    <h3 class="article-title"><span>思奇中的身份认证与权限管控设计（上）</span></h3>
     
   
 
@@ -141,72 +147,10 @@
   </div>
 </article>
 
-
-
-  <article>
-
-  
-    
-    <h3 class="article-title"><a href="/2016/10/21/how-thiki-test-restful-web-apis/"><span>思奇如何测试RESTful Web APIs</span></a></h3>
-    
   
 
-  <div class="article-top-meta">
-    <span class="posted-on">
-      <a href="/2016/10/21/how-thiki-test-restful-web-apis/" rel="bookmark">
-        <time class="entry-date published" datetime="2016-10-21T00:23:35.000Z">
-          2016-10-21
-        </time>
-      </a>
-    </span>
-  </div>
 
 
-  
-
-  <div class="article-content">
-    <div class="entry">
-      
-        <p>从本文开始，我们将一步步讨论思奇看板中的技术实践。本文讨论的是自动化测试方面的应用，技术上采用spring-test、rest-assured和HSQL.
-      
-    </div>
-
-  </div>
-
-  <div class="article-footer">
-    <div class="article-meta pull-left">
-
-    
-      
-
-    <span class="post-categories">
-      <i class="icon-categories"></i>
-        <a href="/categories/技术进步/">技术进步</a>
-    </span>
-    
-
-    
-    
-
-    <span class="post-tags">
-      <i class="icon-tags"></i>
-        <a href="/tags/spring-boot/">spring-boot</a><a href="/tags/思奇/">思奇</a><a href="/tags/rest-assured/">rest-assured</a>
-    </span>
-    
-
-    </div>
-
-    
-  </div>
-</article>
-
-
-
-
-<nav class="pagination">
-  
-  
-</nav>
     </main>
 
     <footer class="site-footer">
