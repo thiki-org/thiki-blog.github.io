@@ -89,7 +89,7 @@
   <div class="article-content">
     <div class="entry">
       
-        <p>身份认证和权限管控是一个成熟架构所必备的两个部分，思奇也不例外。总体来说，思奇在安全上主要分两大块：<strong>身份认证</strong>和<strong>权限管控</strong>。<br><img src="http://od6gpaf9l.bkt.clouddn.com/14773996272084.jpg" alt=""></p>
+        <p>身份认证和权限管控是一个成熟架构所必备的两个部分，思奇也不例外。总体来说，思奇在安全上主要分两大块：<strong>身份认证</strong>和<strong>权限管控</strong>。<br><img src="http://od6gpaf9l.bkt.clouddn.com/14774002292795.jpg" alt=""></p>
 <p>思奇采用RESTful的架构风格，因此身份认证和鉴权在某些方面也有别于我们常见的系统。本文主要讲解思奇的身份认证体系，权限管控方面的信息将在下一篇文章中介绍。</p>
 <p>在身份认证上，我们主要基于以下几个方面考虑：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">系统无状态，不可采用session会话；</div><div class="line">客户端保存状态，密码不可明文传输；</div><div class="line">身份认证信息在传输过程中不可被篡改；</div><div class="line">身份认证与权限管理分离；</div><div class="line">安全设计与业务规则分离。</div></pre></td></tr></table></figure>
