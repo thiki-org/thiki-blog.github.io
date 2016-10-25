@@ -83,32 +83,7 @@
   <div class="article-content">
     <div class="entry">
       
-        <p>总体来说，思奇在安全上主要分两大块：<strong>身份认证</strong>和<strong>权限管控</strong>。全局设计如下图所示：<br><img src="http://od6gpaf9l.bkt.clouddn.com/14774011284207.jpg" alt=""><br>在了解安全设计前，我们先来了解以下几个概念在思奇中的含义。</p>
-<blockquote>
-<p>身份认证：判断当前用户是否为系统的合法用户。<br>权限管控：当用户为系统合法用户后，判断其是否具有对特定资源的特定操作的权限。<br>userName：系统中用户的唯一身份标识，自注册后不可更改。</p>
-</blockquote>
-<p>思奇采用RESTful的架构风格，因此身份认证和鉴权在某些方面也有别于我们常见的系统。本文主要讲解思奇的身份认证体系，权限管控方面的信息将在下一篇文章中介绍。</p>
-<p>在身份认证上，我们主要基于以下几个方面考虑：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">系统无状态，不可采用session会话；</div><div class="line">客户端保存状态，密码不可明文传输；</div><div class="line">身份认证信息在传输过程中不可被窜改；</div><div class="line">身份认证与权限管理分离；</div><div class="line">安全设计与业务规则分离。</div></pre></td></tr></table></figure>
-<p>基于以上几点，在设计过程中我们曾经考虑过spring-security和shiro，综合比较分析后，我们认为前者虽然较为全面，但不够灵活；后者虽身轻如燕，然举重不足。因此最终都没有采用，而是重新设计了更为适合思奇的一套认证机制。</p>
-<h2 id="无状态登录与token"><a href="#无状态登录与token" class="headerlink" title="无状态登录与token"></a>无状态登录与token</h2><p>在传统的登录中，我们将密码及用户身份信息在客户端整合后，提交至服务端。服务端通过身份验证后，创建session会话，而客户端则通常在本地将身份信息保存到cookie中。众所周知，RESTful的架构风格中，一项重要的原则便是<strong>服务端无状态</strong>。为此，思奇在登录时也不会创建session，那么它又是如何设计的呢？</p>
-<p>思奇采用的策略是：在请求在客户端和服务端来往之间，颁发通关文牒，即<strong>token</strong>.客户端在登录系统时，若身份通过合法性验证，服务端将会给客户端生成一个token，token实则是一个加密字符串，如：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">4988ca54a84321490e03fd906b5d2425afba80914c282271fd83ad1438ec8b55976cf77197a77b08c750bfb5e6173790f9f95f4e07a4f273d6fad3645e8377ed8ea865770a8aa4ff05168a98dc2417a4254405fb1639871cfc63f0dd5871a4805dc3778c106d37010b2c20adedd0117a2a8e63632744fa4e33151d880eed022e</div></pre></td></tr></table></figure>
-<p>在这段加密字符串中，它包含了当前用户的信息，以及它的失效时间。</p>
-<p>客户端登录成功获取到该字符串后，将其保存到本地，并且在每次向服务端发送请求时，带上这个通关文牒。服务端在接收到请求后，会检查它的请求头部所携带的token信息，解密后服务端要做两件事：</p>
-<p><strong>1、检查它是否失效</strong><br>正如我们前面所提到的，服务端在颁发token时，已经将失效时间加密进去。如果失效，则客户端必须重新认证获取新的token.目前token自颁发后，二十分钟内有效，有效期可以配置。</p>
-<p><strong>2、检查用户标识是否被篡改</strong> </p>
-<p>token中包含了用户信息，为什么要检查它是被窜改？其实检查的并非是token，而是另一项重要的信息<strong>userName</strong>.</p>
-<p><img src="http://od6gpaf9l.bkt.clouddn.com/WechatIMG10.jpeg" alt=""></p>
-<p>客户端在发送请求时，必须要带上两个头部信息<code>token</code>和<code>userName</code>。在思奇中，userName是用户的唯一身份标识，然而它在传输过程中是有可能被篡改的。思奇在解密token后也会有一个userName，将两者进行比较，若两者不同，则请求已经被窜改，服务端将会拒绝本次请求。</p>
-<h2 id="RSA加密"><a href="#RSA加密" class="headerlink" title="RSA加密"></a>RSA加密</h2><p>众所周知，密码不能明文传输，以免被截获。然而，单纯的通过某种加密算法在客户端加密，服务端解密，也是不妥的。比如用MD5加密的话，如果用户的密码相对简单，也仍然是可以被截获破解的。因此，思奇采用了RSA非对称加密算法。</p>
-<p>我们可以先生成一对公钥和密钥放到resources目录下，如下图</p>
-<p><img src="http://od6gpaf9l.bkt.clouddn.com/542132E6-25EB-49C3-9EC3-3CF1F0244126.png" alt=""></p>
-<p>客户端在向服务端发送密码前，先从服务端获取用于本地加密的公钥，然后再用公钥对密码加密后传输。服务端获取密码后，首先用私钥将密码解密获取明文。这里要注意的是，服务端获取明文后，将会通过MD5加盐算法将密码重新加密，并保存到数据库。此处加密所用的盐，是在用户注册时生成，并保存到了用户信息数据库中。</p>
-<p>身份认证机制图示如下：<br><img src="http://od6gpaf9l.bkt.clouddn.com/14774034705353.jpg" alt=""></p>
-<h2 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h2><p>源代码中，身份认证与权限管控的代码位于<code>foundation.security</code>目录下：<br><img src="http://od6gpaf9l.bkt.clouddn.com/14774035805366.jpg" alt=""></p>
-<p>身份认证的过滤器位于<code>identification</code>下的<code>filter</code>目录中，此过滤器也是身份认证的入口。通过该入口，可顺藤摸瓜了解其全部工作机制。</p>
-
+        <p>总体来说，思奇在安全上主要分两大块：<strong>身份认证</strong>和<strong>权限管控</strong>。全局设计如下图所示：<br><img src="http://od6gpaf9l.bkt.clouddn.com/14774011284207.jpg" alt=""><br>
       
     </div>
 
@@ -131,12 +106,21 @@
 
     <span class="post-tags">
       <i class="icon-tags"></i>
-        <a href="/tags/身份认证/">身份认证</a><a href="/tags/鉴权/">鉴权</a><a href="/tags/spring-boot/">spring-boot</a>
+        <a href="/tags/spring-boot/">spring-boot</a><a href="/tags/身份认证/">身份认证</a><a href="/tags/鉴权/">鉴权</a>
     </span>
     
 
     </div>
 
+    
+    <div class="article-meta pull-right">
+      <span>
+        <i class="icon-comments"></i>
+        <span>
+          <a href="2016/10/24/the-design-of-identification-and-authentication-in-thiki-kanban-Ⅰ/#comment">Comments</a>
+        </span>
+      </span>
+    </div>
     
   </div>
 </article>
@@ -190,12 +174,21 @@
 
     <span class="post-tags">
       <i class="icon-tags"></i>
-        <a href="/tags/spring-boot/">spring-boot</a><a href="/tags/思奇/">思奇</a><a href="/tags/rest-assured/">rest-assured</a>
+        <a href="/tags/思奇/">思奇</a><a href="/tags/rest-assured/">rest-assured</a><a href="/tags/spring-boot/">spring-boot</a>
     </span>
     
 
     </div>
 
+    
+    <div class="article-meta pull-right">
+      <span>
+        <i class="icon-comments"></i>
+        <span>
+          <a href="2016/10/21/how-thiki-test-restful-web-apis/#comment">Comments</a>
+        </span>
+      </span>
+    </div>
     
   </div>
 </article>
