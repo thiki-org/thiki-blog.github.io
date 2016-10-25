@@ -105,7 +105,7 @@
 <p>我们可以先生成一对公钥和密钥放到resources目录下，如下图</p>
 <p><img src="http://od6gpaf9l.bkt.clouddn.com/542132E6-25EB-49C3-9EC3-3CF1F0244126.png" alt=""></p>
 <p>客户端在向服务端发送密码前，先从服务端获取用于本地加密的公钥，然后再用公钥对密码加密后传输。服务端获取密码后，首先用私钥将密码解密获取明文。这里要注意的是，服务端获取明文后，将会通过MD5加盐算法将密码重新加密，并保存到数据库。此处加密所用的盐，是在用户注册时生成，并保存到了用户信息数据库中。</p>
-<p>身份认证全局如下：<br><img src="http://od6gpaf9l.bkt.clouddn.com/14774034705353.jpg" alt=""></p>
+<p>身份认证机制图示如下：<br><img src="http://od6gpaf9l.bkt.clouddn.com/14774034705353.jpg" alt=""></p>
 <h2 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h2><p>源代码中，身份认证与权限管控的代码位于<code>foundation.security</code>目录下：<br><img src="http://od6gpaf9l.bkt.clouddn.com/14774035805366.jpg" alt=""></p>
 <p>身份认证的过滤器位于<code>identification</code>下的<code>filter</code>目录中，此过滤器也是身份认证的入口。通过该入口，可顺藤摸瓜了解其全部工作机制。</p>
 
