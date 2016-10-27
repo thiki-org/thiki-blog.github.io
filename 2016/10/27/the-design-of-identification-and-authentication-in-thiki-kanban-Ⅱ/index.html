@@ -3,21 +3,28 @@
 <head>
   <meta charset="utf-8">
   
-  <title>思奇看板团队 | 以乐趣创造乐趣</title>
+  <title>身份认证与权限管控设计（下） | 思奇看板团队 | 以乐趣创造乐趣</title>
 
   
   <meta name="author" content="思奇团队">
   
 
   
+  <meta name="description" content="在上篇文章中，我们介绍了身份认证，本文将介绍安全体系中的另一个重要的方面-权限管控。
+权限管控原则对于权限管控的处理，我们假定务必满足以下几个原则：
+123456权限管控与身份认证分离；权限管控与业务处理分离；权限的启用不可破坏现有的测试用例，不可造成大量代码变动或废弃，亦不可造成客户端崩溃；在相对">
+  
 
+  
+  
+  <meta name="keywords" content="spring-boot,身份认证,鉴权">
   
 
   <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
 
-  
+  <meta property="og:title" content="身份认证与权限管控设计（下）"/>
 
   <meta property="og:site_name" content="思奇看板团队"/>
 
@@ -58,12 +65,11 @@
 </header>
 
     <main class="site-main posts-loop">
-    
-  <article>
+    <article>
 
   
     
-    <h3 class="article-title"><a href="/2016/10/27/the-design-of-identification-and-authentication-in-thiki-kanban-Ⅱ/"><span>身份认证与权限管控设计（下）</span></a></h3>
+    <h3 class="article-title"><span>身份认证与权限管控设计（下）</span></h3>
     
   
 
@@ -147,161 +153,35 @@
     </div>
 
     
-    <div class="article-meta pull-right">
-      <span>
-        <i class="icon-comments"></i>
-        <span>
-          <a href="2016/10/27/the-design-of-identification-and-authentication-in-thiki-kanban-Ⅱ/#comment">评论</a>
-        </span>
-      </span>
-    </div>
-    
   </div>
 </article>
 
-
-
-  <article>
-
   
-    
-    <h3 class="article-title"><a href="/2016/10/24/the-design-of-identification-and-authentication-in-thiki-kanban-Ⅰ/"><span>身份认证与权限管控设计（上）</span></a></h3>
-    
-  
-
-  <div class="article-top-meta">
-    <span class="posted-on">
-      <a href="/2016/10/24/the-design-of-identification-and-authentication-in-thiki-kanban-Ⅰ/" rel="bookmark">
-        <time class="entry-date published" datetime="2016-10-24T13:02:48.000Z">
-          2016-10-24
-        </time>
-      </a>
-    </span>
-  </div>
-
-
-  
-
-  <div class="article-content">
-    <div class="entry">
-      
-        <p>总体来说，思奇在安全上主要分两大块：<strong>身份认证</strong>和<strong>权限管控</strong>。全局设计如下图所示：<br><img src="http://od6gpaf9l.bkt.clouddn.com/14774462246657.jpg" alt=""></p>
-      
-    </div>
-
-  </div>
-
-  <div class="article-footer">
-    <div class="article-meta pull-left">
-
-    
-      
-
-    <span class="post-categories">
-      <i class="icon-categories"></i>
-        <a href="/categories/技术进步/">技术进步</a>
-    </span>
-    
-
-    
-    
-
-    <span class="post-tags">
-      <i class="icon-tags"></i>
-        <a href="/tags/spring-boot/">spring-boot</a><a href="/tags/身份认证/">身份认证</a><a href="/tags/鉴权/">鉴权</a>
-    </span>
-    
-
-    </div>
-
-    
-    <div class="article-meta pull-right">
-      <span>
-        <i class="icon-comments"></i>
-        <span>
-          <a href="2016/10/24/the-design-of-identification-and-authentication-in-thiki-kanban-Ⅰ/#comment">评论</a>
-        </span>
-      </span>
-    </div>
-    
-  </div>
-</article>
-
-
-
-  <article>
-
-  
-    
-    <h3 class="article-title"><a href="/2016/10/21/how-thiki-test-restful-web-apis/"><span>思奇如何测试RESTful Web APIs</span></a></h3>
-    
-  
-
-  <div class="article-top-meta">
-    <span class="posted-on">
-      <a href="/2016/10/21/how-thiki-test-restful-web-apis/" rel="bookmark">
-        <time class="entry-date published" datetime="2016-10-21T00:23:35.000Z">
-          2016-10-21
-        </time>
-      </a>
-    </span>
-  </div>
-
-
-  
-
-  <div class="article-content">
-    <div class="entry">
-      
-        <p>从本文开始，我们将一步步讨论思奇看板中的技术实践。本文讨论的是自动化测试方面的应用，技术上采用spring-test、rest-assured和HSQL.
-      
-    </div>
-
-  </div>
-
-  <div class="article-footer">
-    <div class="article-meta pull-left">
-
-    
-      
-
-    <span class="post-categories">
-      <i class="icon-categories"></i>
-        <a href="/categories/技术进步/">技术进步</a>
-    </span>
-    
-
-    
-    
-
-    <span class="post-tags">
-      <i class="icon-tags"></i>
-        <a href="/tags/思奇/">思奇</a><a href="/tags/rest-assured/">rest-assured</a><a href="/tags/spring-boot/">spring-boot</a>
-    </span>
-    
-
-    </div>
-
-    
-    <div class="article-meta pull-right">
-      <span>
-        <i class="icon-comments"></i>
-        <span>
-          <a href="2016/10/21/how-thiki-test-restful-web-apis/#comment">评论</a>
-        </span>
-      </span>
-    </div>
-    
-  </div>
-</article>
+	<div id="comment">
+	
+	
+	<!-- 多说评论框 start -->
+	 <div class="ds-thread" data-thread-key="/2016/10/27/the-design-of-identification-and-authentication-in-thiki-kanban-Ⅱ/" data-title="身份认证与权限管控设计（下）" data-url="https://github.com/thiki-org/thiki-blog.github.io.git/2016/10/27/the-design-of-identification-and-authentication-in-thiki-kanban-Ⅱ/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"thiki-blog"};
+	  (function() {
+	    var ds = document.createElement('script');
+	    ds.type = 'text/javascript';ds.async = true;
+	    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+	    ds.charset = 'UTF-8';
+	    (document.getElementsByTagName('head')[0] 
+	     || document.getElementsByTagName('body')[0]).appendChild(ds);
+	  })();
+	  </script>
+	<!-- 多说公共JS代码 end -->
+	
+	</div>
 
 
 
 
-<nav class="pagination">
-  
-  
-</nav>
     </main>
 
     <footer class="site-footer">
